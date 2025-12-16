@@ -63,6 +63,7 @@ public:
   uint64_t gpuResourceID;
   mach_port_t machPort;
   DXMT_RESOURCE_RESIDENCY_STATE residencyState;
+  GenericAccessTracker fenceTracker;
 
 private:
   TextureAllocation(
