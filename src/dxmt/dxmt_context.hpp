@@ -251,14 +251,15 @@ struct AllocatedTempBufferSlice {
 };
 
 class ArgumentEncodingContext {
+  template <bool PreRasterStage>
   void
   trackBuffer(BufferAllocation *allocation, DXMT_ENCODER_RESOURCE_ACESS flags) {
     retainAllocation(allocation);
     if (allocation->flags().test(BufferAllocationFlag::GpuReadonly))
       return;
-    // TODO: CHECK FENCE
   }
 
+  template<bool PreRasterStage = false>
   void
   trackTexture(TextureAllocation *allocation, DXMT_ENCODER_RESOURCE_ACESS flags) {
     retainAllocation(allocation);
@@ -268,46 +269,52 @@ class ArgumentEncodingContext {
   }
 
 public:
+  template<bool PreRasterStage = false>
   std::pair<BufferAllocation *, uint64_t>
   access(Rc<Buffer> const &buffer, unsigned offset, unsigned length, DXMT_ENCODER_RESOURCE_ACESS flags) {
     auto allocation = buffer->current();
-    trackBuffer(allocation, flags);
+    trackBuffer<PreRasterStage>(allocation, flags);
     return {allocation, allocation->currentSuballocationOffset()};
   }
 
+  template<bool PreRasterStage = false>
   std::pair<BufferView const &, uint32_t>
   access(Rc<Buffer> const &buffer, unsigned viewId, DXMT_ENCODER_RESOURCE_ACESS flags) {
     auto allocation = buffer->current();
-    trackBuffer(allocation, flags);
+    trackBuffer<PreRasterStage>(allocation, flags);
     auto &view = buffer->view_(viewId, allocation);
     return {view, allocation->currentSuballocationOffset(view.suballocation_texel)};
   }
 
+  template<bool PreRasterStage = false>
   std::pair<BufferAllocation *, uint64_t>
   access(Rc<Buffer> const &buffer, DXMT_ENCODER_RESOURCE_ACESS flags) {
     auto allocation = buffer->current();
-    trackBuffer(allocation, flags);
+    trackBuffer<PreRasterStage>(allocation, flags);
     return {allocation, allocation->currentSuballocationOffset()};
   }
 
+  template<bool PreRasterStage = false>
   WMT::Texture
   access(Rc<Texture> const &texture, unsigned level, unsigned slice, DXMT_ENCODER_RESOURCE_ACESS flags) {
     auto allocation = texture->current();
-    trackTexture(allocation, flags);
+    trackTexture<PreRasterStage>(allocation, flags);
     return allocation->texture();
   }
 
+  template<bool PreRasterStage = false>
   TextureView const &
   access(Rc<Texture> const &texture, unsigned viewId, DXMT_ENCODER_RESOURCE_ACESS flags) {
     auto allocation = texture->current();
-    trackTexture(allocation, flags);
+    trackTexture<PreRasterStage>(allocation, flags);
     return texture->view_(viewId, allocation);
   }
 
+  template<bool PreRasterStage = false>
   WMT::Texture
   access(Rc<Texture> const &texture, DXMT_ENCODER_RESOURCE_ACESS flags) {
     auto allocation = texture->current();
-    trackTexture(allocation, flags);
+    trackTexture<PreRasterStage>(allocation, flags);
     return allocation->texture();
   }
 
@@ -388,7 +395,7 @@ public:
   std::pair<WMT::Buffer, uint64_t>
   currentIndexBuffer() {
     // because of indirect draw, we can't predicate the accessed buffer range
-    auto [ibuf_alloc, offset] = access(ibuf_, 0, ibuf_->length(), DXMT_ENCODER_RESOURCE_ACESS_READ);
+    auto [ibuf_alloc, offset] = access<true>(ibuf_, 0, ibuf_->length(), DXMT_ENCODER_RESOURCE_ACESS_READ);
     return {ibuf_alloc->buffer(), offset};
   };
 
