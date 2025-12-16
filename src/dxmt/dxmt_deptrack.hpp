@@ -79,9 +79,19 @@ public:
     }
   }
 
-  bool
+  constexpr bool
   test(EncoderId id) const {
     return storage_[PARITY(id)] & (1ull << LANE(id));
+  }
+
+  constexpr bool
+  testAndSet(EncoderId id) {
+    auto P = PARITY(id);
+    auto LM = 1ull << LANE(id);
+    if (storage_[P] & LM)
+      return true;
+    storage_[P] |= LM;
+    return false;
   }
 
   FenceSet &
@@ -90,6 +100,15 @@ public:
       storage_[i] &= set.storage_[i];
     }
     return *this;
+  }
+
+  constexpr bool
+  contains(const FenceSet &set) const {
+    for (int i = 0; i < kParity; i++) {
+      if ((storage_[i] & set.storage_[i]) != set.storage_[i])
+        return false;
+    }
+    return true;
   }
 
   FenceSet &
@@ -250,7 +269,10 @@ private:
 
 class FenceLocalityCheck {
 public:
-  FenceSet ensureLocality(FenceSet strong_fences, EncoderId id);
+  FenceSet collectAndSimplifyWaits(FenceSet strong_fences, EncoderId id, bool implicit_pre_raster_wait = false);
+
+private:
+  std::array<FenceSet, kParityLane> summary_;
 };
 
 } // namespace dxmt
