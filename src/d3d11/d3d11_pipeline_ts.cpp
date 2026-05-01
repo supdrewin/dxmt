@@ -51,16 +51,6 @@ public:
     auto &domain_reflection = pDesc->DomainShader->reflection();
     uint32_t max_potential_factor = domain_reflection.PostTessellator.MaxPotentialTessFactor;
 
-    if (!device_->GetMTLDevice().supportsFamily(WMTGPUFamilyApple9)) {
-      // indeed this value might be too conservative
-      max_potential_factor = std::min(8u, max_potential_factor);
-    }
-    if ((float)max_potential_factor < hull_reflection.Tessellator.MaxFactor) {
-      WARN("maxtessfactor(", hull_reflection.Tessellator.MaxFactor,
-           ") is too large for a mesh pipeline. Clamping to ",
-           max_potential_factor);
-    }
-
     VertexHullShader =
         pDesc->HullShader->get_shader(ShaderVariantTessellationVertexHull{
             pDesc->InputLayout,
