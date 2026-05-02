@@ -1384,10 +1384,7 @@ public:
       );
     }
     if (status == DrawCallStatus::Tessellation) {
-      return TessellationDrawIndexed(
-          ControlPointCount, IndexCountPerInstance, StartIndexLocation, BaseVertexLocation, InstanceCount,
-          StartInstanceLocation
-      );
+      return;
     }
     auto IndexType =
         state_.InputAssembler.IndexBufferFormat == DXGI_FORMAT_R32_UINT ? WMTIndexTypeUInt32 : WMTIndexTypeUInt16;
