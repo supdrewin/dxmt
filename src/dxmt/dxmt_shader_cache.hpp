@@ -6,6 +6,8 @@ namespace dxmt {
 
 constexpr int kDXMTShaderCacheVersion = 18;
 
+std::string GetDXMTShaderCacheDirectory();
+
 class ShaderCache {
 public:
   template <typename T> class LockProtected {
