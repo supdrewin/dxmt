@@ -59,6 +59,9 @@ namespace dxmt {
     { R"(\\helldivers2\.exe$)", {{
       { "d3d11.maxFeatureLevel",   "12_1" },
     }} },
+    { R"(\\ved\.exe$)", {{
+      { "d3d11.tessellationDrawIndexedInstanced",   "False" },
+    }} },
   }};
 
   const Config* findProfile(const ProfileList& profiles, const std::string& appName) {

@@ -41,6 +41,7 @@
 #include "util_flags.hpp"
 #include "util_math.hpp"
 #include "util_win32_compat.h"
+#include "config/config.hpp"
 
 namespace dxmt {
 
@@ -1402,10 +1403,11 @@ public:
       );
     }
     if (status == DrawCallStatus::Tessellation) {
-      return TessellationDrawIndexed(
+      if (tessellation_draw_indexed_instanced_) TessellationDrawIndexed(
           ControlPointCount, IndexCountPerInstance, StartIndexLocation, BaseVertexLocation, InstanceCount,
           StartInstanceLocation
       );
+      return;
     }
     auto IndexType =
         state_.InputAssembler.IndexBufferFormat == DXGI_FORMAT_R32_UINT ? WMTIndexTypeUInt32 : WMTIndexTypeUInt16;
@@ -5161,6 +5163,7 @@ protected:
   D3D11UserDefinedAnnotation annotation_;
   MTLD3D11ContextExt<ContextInternalState> ext_;
   uint64_t max_object_threadgroups_;
+  bool tessellation_draw_indexed_instanced_;
 
 public:
   MTLD3D11DeviceContextImplBase(MTLD3D11Device *pDevice, ContextInternalState &ctx_state, ContextInternalState::device_mutex_t &mutex) :
@@ -5182,6 +5185,7 @@ public:
     default_depth_stencil_state->Release();
 
     max_object_threadgroups_ = m_parent->GetDXMTDevice().maxObjectThreadgroups();
+    tessellation_draw_indexed_instanced_ = Config::getInstance().getOption<bool>("d3d11.tessellationDrawIndexedInstanced", true);
   }
 };
 
